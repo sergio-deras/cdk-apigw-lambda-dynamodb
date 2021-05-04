@@ -21,7 +21,11 @@ async function getItem(){
 exports.main = async (event, context) => {
   try {
     const data = await getItem()
-    return { body: data }
+    return {
+      statusCode: 200,
+      headers: {},
+      body: JSON.stringify(data)
+    }
   } catch (err) {
     return { error: err }
   }
