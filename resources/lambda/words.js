@@ -1,4 +1,3 @@
-
 const AWS = require('aws-sdk');
 const DB = process.env.DB_NAME;
 var docClient = new AWS.DynamoDB.DocumentClient();
@@ -6,14 +5,14 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 const params = {
   TableName : process.env.DB_NAME,
   Key: {
-    "word": 'hi'
+    "word": 'Hi'
   }
 }
 
 async function getItem(){
   try {
-    const data = await docClient.get(params).promise()
-    return data
+    const data = await docClient.get(params).promise();
+    return data.Item;
   } catch (err) {
     return err
   }
@@ -22,7 +21,7 @@ async function getItem(){
 exports.main = async (event, context) => {
   try {
     const data = await getItem()
-    return { body: JSON.stringify(data) }
+    return { body: data }
   } catch (err) {
     return { error: err }
   }
