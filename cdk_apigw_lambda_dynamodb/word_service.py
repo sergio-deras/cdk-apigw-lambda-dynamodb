@@ -38,33 +38,39 @@ class WordService(core.Construct):
 
         table.grant_read_data(lambda_handler)
 
-        web_socket_api = apigw.WebSocketApi(self, 'words_api')
-        
+        # api_integration = integrations.LambdaWebSocketIntegration(handler=lambda_handler)
+        api_integration = integrations.LambdaWebSocketIntegration(handler=lambda_handler)
+        # Falla la integración, el LAMBDA_PROXY y el resultado
+        #web_socket_api = apigw.WebSocketApi(self, 'words_api',
+        #    default_route_options={"integration": api_integration}
+        #)
+
+        web_socket_route_options = apigw.WebSocketRouteOptions(integration=api_integration)
+        web_socket_api = apigw.WebSocketApi(self, 'words_api', 
+            default_route_options=web_socket_route_options
+        )
+        web_socket_api.add_route('na',
+            integration=integrations.LambdaWebSocketIntegration(
+                handler=lambda_handler
+            )
+        )
+        """
+        NO FUNCIONA
+                web_socket_api.add_route("$default",
+                    integration=api_integration
+                )
+        """
+        # api_integration.bind(route=apigw.WebSocketRouteIntegrationBindOptions.., scope=self )
+
         api_stage = apigw.WebSocketStage(self, 'DevStage', 
             web_socket_api=web_socket_api,
             stage_name='dev',
             auto_deploy=True,
             )
         
-        api_integration = integrations.LambdaWebSocketIntegration(handler=lambda_handler)
-        # Try integration = apigateway.LambdaWebSocketIntegration(handler,
-        #        request_templates={"application/json": '{ "statusCode": "200" }'})
+        #web_socket_api.api_endpoint
 
-        # Test 1st: web_socket_api = WebSocketApi(self, 'words_api',
-        #    default_route_options={"integration": integrations.LambdaWebSocketIntegration(handler=lambda_handler)}
-        # )
-        # Comment:
-        web_socket_api.add_route('sendmessage', # use default
-            integration=api_integration
-        )
-
-         #Do we need this?
-        lambda_handler.add_to_role_policy(iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=["execute-api:*"],
-            resources=["*"],
-        ))
-
+        
         """
         api = apigateway.RestApi(self, "words-api",
                   rest_api_name="Words API",
